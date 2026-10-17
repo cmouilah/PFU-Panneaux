@@ -1,0 +1,51 @@
+[
+  {
+    "id": "user-admin-01",
+    "email": "admin@admin.com",
+    "password": "admin",
+    "profile_id": "prof-admin-01",
+    "created_at": "2023-01-01T08:00:00Z"
+  },
+  {
+    "id": "user-admin-02",
+    "email": "admin@geosignal.dz",
+    "password": "admin123",
+    "profile_id": "prof-admin-01",
+    "created_at": "2023-01-01T08:00:00Z"
+  },
+  {
+    "id": "user-resp-01",
+    "email": "responsable@geosignal.dz",
+    "password": "responsable123",
+    "profile_id": "prof-resp-01",
+    "created_at": "2023-01-05T09:00:00Z"
+  },
+  {
+    "id": "user-tech-01",
+    "email": "tech1@geosignal.dz",
+    "password": "tech123",
+    "profile_id": "prof-tech-01",
+    "created_at": "2023-01-10T10:00:00Z"
+  },
+  {
+    "id": "user-tech-02",
+    "email": "tech2@geosignal.dz",
+    "password": "tech123",
+    "profile_id": "prof-tech-02",
+    "created_at": "2023-01-12T11:00:00Z"
+  },
+  {
+    "id": "user-tech-03",
+    "email": "tech3@geosignal.dz",
+    "password": "tech123",
+    "profile_id": "prof-tech-03",
+    "created_at": "2023-01-15T12:00:00Z"
+  },
+  {
+    "id": "user-obs-01",
+    "email": "observateur@geosignal.dz",
+    "password": "obs123",
+    "profile_id": "prof-obs-01",
+    "created_at": "2023-02-01T14:00:00Z"
+  }
+]

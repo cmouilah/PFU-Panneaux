@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { dashboard as dashboardApi } from '../lib/api';
+import { dashboard as dashboardApi, localDataManagement } from '../lib/api';
 import { DashboardStats } from '../types/database';
 import { MapPin, Activity, Wrench, Users, TrendingUp, AlertCircle } from 'lucide-react';
 
@@ -9,6 +9,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadStats();
+    const unsubscribe = localDataManagement.subscribe(() => {
+      loadStats();
+    });
+    return () => unsubscribe();
   }, []);
 
   async function loadStats() {

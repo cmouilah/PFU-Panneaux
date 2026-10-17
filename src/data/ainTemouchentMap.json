@@ -1,0 +1,321 @@
+﻿{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Perimetre Urbain Ain Temouchent", "type": "boundary" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1610, 35.2780], [-1.1600, 35.2830], [-1.1585, 35.2880],
+          [-1.1570, 35.2930], [-1.1560, 35.2970], [-1.1550, 35.3010],
+          [-1.1530, 35.3040], [-1.1490, 35.3060], [-1.1445, 35.3070],
+          [-1.1395, 35.3065], [-1.1345, 35.3055], [-1.1295, 35.3040],
+          [-1.1250, 35.3010], [-1.1215, 35.2975], [-1.1195, 35.2930],
+          [-1.1185, 35.2875], [-1.1190, 35.2825], [-1.1210, 35.2775],
+          [-1.1245, 35.2735], [-1.1295, 35.2710], [-1.1350, 35.2700],
+          [-1.1410, 35.2705], [-1.1465, 35.2715], [-1.1515, 35.2735],
+          [-1.1555, 35.2755], [-1.1590, 35.2765], [-1.1610, 35.2780]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Centre-Ville", "type": "district" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1470, 35.2840], [-1.1470, 35.2960], [-1.1340, 35.2960],
+          [-1.1340, 35.2840], [-1.1470, 35.2840]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Sidi Said", "type": "district" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1570, 35.2880], [-1.1470, 35.2880], [-1.1470, 35.3020],
+          [-1.1570, 35.3020], [-1.1570, 35.2880]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hai Castors", "type": "district" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1340, 35.2880], [-1.1215, 35.2880], [-1.1215, 35.3020],
+          [-1.1340, 35.3020], [-1.1340, 35.2880]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hai Moulay", "type": "district" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1570, 35.2750], [-1.1470, 35.2750], [-1.1470, 35.2840],
+          [-1.1570, 35.2840], [-1.1570, 35.2750]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hai Sbaa", "type": "district" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1340, 35.2750], [-1.1215, 35.2750], [-1.1215, 35.2840],
+          [-1.1340, 35.2840], [-1.1340, 35.2750]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Zone Industrielle Nord", "type": "industrial" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.1470, 35.3020], [-1.1340, 35.3020], [-1.1340, 35.3070],
+          [-1.1470, 35.3070], [-1.1470, 35.3020]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Avenue de la Republique", "type": "road", "hierarchy": "primary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1600, 35.2895], [-1.1530, 35.2895], [-1.1460, 35.2895],
+          [-1.1400, 35.2895], [-1.1340, 35.2895], [-1.1270, 35.2895],
+          [-1.1215, 35.2895]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Boulevard Mohamed V", "type": "road", "hierarchy": "primary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1405, 35.2720], [-1.1405, 35.2790], [-1.1405, 35.2860],
+          [-1.1405, 35.2930], [-1.1405, 35.3000], [-1.1405, 35.3065]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Boulevard du 1er Novembre", "type": "road", "hierarchy": "primary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1600, 35.2940], [-1.1530, 35.2940], [-1.1470, 35.2940],
+          [-1.1405, 35.2940], [-1.1340, 35.2940], [-1.1270, 35.2940],
+          [-1.1215, 35.2940]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Route Nationale RN2 (Transit)", "type": "road", "hierarchy": "highway" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1620, 35.2865], [-1.1540, 35.2875], [-1.1460, 35.2890],
+          [-1.1385, 35.2910], [-1.1310, 35.2935], [-1.1240, 35.2955],
+          [-1.1190, 35.2965]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Avenue Houari Boumediene", "type": "road", "hierarchy": "primary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1505, 35.2720], [-1.1505, 35.2790], [-1.1505, 35.2860],
+          [-1.1505, 35.2930], [-1.1505, 35.2995]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Avenue Colonel Lotfi", "type": "road", "hierarchy": "secondary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1600, 35.2850], [-1.1530, 35.2850], [-1.1470, 35.2850],
+          [-1.1405, 35.2850], [-1.1340, 35.2850], [-1.1275, 35.2850]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Boulevard Zabana", "type": "road", "hierarchy": "secondary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1470, 35.2720], [-1.1470, 35.2790], [-1.1470, 35.2860],
+          [-1.1470, 35.2940], [-1.1470, 35.3010]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Larbi Ben Mhidi", "type": "road", "hierarchy": "secondary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1550, 35.2800], [-1.1490, 35.2800], [-1.1430, 35.2800],
+          [-1.1370, 35.2800], [-1.1300, 35.2800]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Emir Abdelkader", "type": "road", "hierarchy": "secondary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1340, 35.2720], [-1.1340, 35.2790], [-1.1340, 35.2860],
+          [-1.1340, 35.2940], [-1.1340, 35.3010]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Avenue Ibn Khaldoun", "type": "road", "hierarchy": "secondary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1600, 35.2970], [-1.1530, 35.2970], [-1.1470, 35.2970],
+          [-1.1405, 35.2970], [-1.1340, 35.2970], [-1.1280, 35.2970]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Didouche Mourad", "type": "road", "hierarchy": "tertiary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1450, 35.2720], [-1.1450, 35.2790], [-1.1450, 35.2860],
+          [-1.1450, 35.2930]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Avenue Bentoumi Ali", "type": "road", "hierarchy": "tertiary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1600, 35.3010], [-1.1530, 35.3010], [-1.1470, 35.3010],
+          [-1.1405, 35.3010], [-1.1340, 35.3010]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Commandant Ferradj", "type": "road", "hierarchy": "tertiary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1530, 35.2750], [-1.1530, 35.2820], [-1.1530, 35.2895],
+          [-1.1530, 35.2965], [-1.1530, 35.3030]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Ali Benbarka", "type": "road", "hierarchy": "tertiary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1280, 35.2780], [-1.1280, 35.2850], [-1.1280, 35.2920],
+          [-1.1280, 35.2990]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rue Thaalbi", "type": "road", "hierarchy": "tertiary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1550, 35.2920], [-1.1490, 35.2920], [-1.1430, 35.2920],
+          [-1.1370, 35.2920], [-1.1310, 35.2920]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Voie Ferree (Chemin de Fer)", "type": "railway" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1620, 35.2870], [-1.1545, 35.2868], [-1.1470, 35.2867],
+          [-1.1390, 35.2866], [-1.1310, 35.2865], [-1.1240, 35.2864],
+          [-1.1190, 35.2863]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Oued Charef", "type": "river" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-1.1510, 35.2710], [-1.1500, 35.2760], [-1.1495, 35.2810],
+          [-1.1490, 35.2870], [-1.1488, 35.2940], [-1.1490, 35.3010],
+          [-1.1495, 35.3060]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hotel de Ville (Mairie)", "type": "landmark", "icon": "building" },
+      "geometry": { "type": "Point", "coordinates": [-1.1410, 35.2897] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hopital Ahmed Medeghri", "type": "landmark", "icon": "hospital" },
+      "geometry": { "type": "Point", "coordinates": [-1.1505, 35.2945] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Universite Belhadj Bouchaib", "type": "landmark", "icon": "university" },
+      "geometry": { "type": "Point", "coordinates": [-1.1550, 35.2800] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Stade Municipal", "type": "landmark", "icon": "stadium" },
+      "geometry": { "type": "Point", "coordinates": [-1.1265, 35.2910] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Jardin Public", "type": "landmark", "icon": "park" },
+      "geometry": { "type": "Point", "coordinates": [-1.1418, 35.2855] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Gare Ferroviaire", "type": "landmark", "icon": "train" },
+      "geometry": { "type": "Point", "coordinates": [-1.1385, 35.2866] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Gare Routiere", "type": "landmark", "icon": "bus" },
+      "geometry": { "type": "Point", "coordinates": [-1.1340, 35.2870] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Mosquee El Feth", "type": "landmark", "icon": "mosque" },
+      "geometry": { "type": "Point", "coordinates": [-1.1415, 35.2940] }
+    }
+  ]
+}

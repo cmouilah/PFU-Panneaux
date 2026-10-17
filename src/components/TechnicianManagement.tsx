@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { technicians as techniciansApi } from '../lib/api';
+import { technicians as techniciansApi, localDataManagement } from '../lib/api';
 import { Technician, Profile, TechnicianStatus } from '../types/database';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, Users, Phone, Briefcase, Edit2, Trash2, X } from 'lucide-react';
@@ -19,6 +19,12 @@ export default function TechnicianManagement() {
   useEffect(() => {
     if (!isAdmin) return;
     loadData();
+
+    const unsubscribe = localDataManagement.subscribe(() => {
+      loadData();
+    });
+
+    return () => unsubscribe();
   }, [isAdmin]);
 
   async function loadData() {

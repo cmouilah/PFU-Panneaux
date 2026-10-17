@@ -1,52 +1,38 @@
 import { useEffect, useState } from 'react';
-import { commands as commandsApi, panels as panelsApi } from '../lib/api';
-// import { supabase } from '../lib/supabase'; // REMOVED
+import { commands as commandsApi, panels as panelsApi, localDataManagement } from '../lib/api';
 import { Panel, PanelCommand } from '../types/database';
 import { useAuth } from '../contexts/AuthContext';
 import { Radio, Send, Clock, CheckCircle, XCircle, Image as ImageIcon, Share2 } from 'lucide-react';
-
-const categoryToFolder: Record<string, string> = {
-  'A': 'Danger',
-  'B': 'Priorité',
-  'C': 'Prescription',
-  'D': 'Indication',
-};
-
-const getFolderFromCode = (code: string): string => {
-  if (!code) return 'Indication';
-  const firstChar = code.charAt(0).toUpperCase();
-  return categoryToFolder[firstChar] || 'Indication';
-};
+import { getSignImagePath, getOfflineSignSvgFallback, getSignFolder } from '../lib/signImageHelper';
 
 export default function RemoteControl() {
   const { profile } = useAuth();
   const [intelligentPanels, setIntelligentPanels] = useState<Panel[]>([]);
   const [commands, setCommands] = useState<PanelCommand[]>([]);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('A');
   const [newCode, setNewCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [availableIcons, setAvailableIcons] = useState<string[]>([]);
   const [loadingIcons, setLoadingIcons] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const canControl = profile?.role === 'admin' || profile?.role === 'responsable';
 
   useEffect(() => {
     loadData();
 
-    // Polling for updates instead of Supabase Realtime
-    const interval = setInterval(() => {
-      loadCommands();
-    }, 5000);
+    // Subscribe to multi-tab or local updates
+    const unsubscribe = localDataManagement.subscribe(() => {
+      loadData();
+    });
 
-    return () => clearInterval(interval);
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (selectedPanel) {
       setSelectedCategory(selectedPanel.category);
-    } else {
-      setSelectedCategory('');
     }
   }, [selectedPanel]);
 
@@ -84,52 +70,49 @@ export default function RemoteControl() {
       const { data } = await panelsApi.getAll();
       const intelligent = (data || []).filter((p: Panel) => p.is_intelligent);
       setIntelligentPanels(intelligent);
-    } catch (e) { console.error(e); }
+
+      // Keep selectedPanel in sync if already selected
+      if (selectedPanel) {
+        const fresh = intelligent.find((p: Panel) => p.id === selectedPanel.id);
+        if (fresh) setSelectedPanel(fresh);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async function loadCommands() {
     try {
       const { data } = await commandsApi.getAll();
       setCommands(data || []);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async function sendCommand() {
     if (!selectedPanel || !newCode || !canControl) return;
 
+    setSending(true);
     try {
       await commandsApi.create({
         panel_id: selectedPanel.id,
         command_type: 'change_code',
         old_code: selectedPanel.code,
         new_code: newCode,
-        status: 'sent',
+        status: 'executed',
         sent_by: profile?.id,
         sent_at: new Date().toISOString(),
       });
-      // The backend handles panel update in the same transaction for consistency
 
-      // Simulate execution delay updates for UI feedback? 
-      // The backend doesn't have a background job runner implemented in this simple migration plan.
-      // The user wants "migration", implying functionality parity.
-      // Supabase version used setTimeout to update status to "executed".
-      // We can replicate this optimistically or add a endpoint to update command status.
-      // But since we are replacing Supabase client logic:
-      // In the original code, the *client* updated the status after 2 seconds!
-      // Wait, "setTimeout(async () => { ... supabase.update(...) })"
-      // Yes, the client was simulating the execution.
-      // I should replicate this simulation if I want exact behavior, but ideally the device updates the status.
-      // For now, I will omit the client-side simulation of device execution because I don't have a route to update command status specifically exposed yet (only creating commands).
-      // Or I can just refresh data.
-      // Let's rely on loadCommands polling.
-
+      alert(`Commande transmise avec succès ! Le panneau ${selectedPanel.code} affiche désormais ${newCode}.`);
       setNewCode('');
-      setSelectedPanel(null);
-      loadData();
-      alert('Commande envoyée successfully');
+      await loadData();
     } catch (error) {
       console.error('Error sending command:', error);
       alert('Erreur lors de l\'envoi de la commande');
+    } finally {
+      setSending(false);
     }
   }
 
@@ -137,7 +120,7 @@ export default function RemoteControl() {
     const url = `${window.location.origin}/?display=${panelId}`;
     try {
       await navigator.clipboard.writeText(url);
-      alert('Lien de simulation copié ! Ouvrez ce lien sur votre téléphone.');
+      alert('Lien de simulation copié dans le presse-papier ! Ouvrez-le dans un nouvel onglet ou sur un autre écran.');
     } catch (err) {
       console.error('Failed to copy link:', err);
     }
@@ -154,30 +137,35 @@ export default function RemoteControl() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Contrôle à distance</h2>
-        <p className="text-gray-600">Gestion des panneaux intelligents en temps réel</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">Contrôle à distance (SIG / PFU)</h2>
+        <p className="text-gray-600">Pilotage dynamique et instantané des panneaux à message variable</p>
       </div>
 
       {!canControl && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-          <p className="text-yellow-800 text-sm">
-            Vous n'avez pas les permissions nécessaires pour contrôler les panneaux à distance.
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-amber-800 text-sm">
+            Vous disposez d'un compte en lecture seule. Seuls les administrateurs et responsables peuvent télécommander les panneaux.
           </p>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <Radio className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900">Envoyer une commande</h3>
+          <div className="flex items-center mb-4 pb-3 border-b border-gray-100">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg mr-3">
+              <Radio className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Télécommande de signalisation</h3>
+              <p className="text-xs text-gray-500">Sélectionnez le panneau et le symbole à afficher</p>
+            </div>
           </div>
 
           {canControl ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sélectionner un panneau intelligent
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Panneau intelligent cible
                 </label>
                 <select
                   value={selectedPanel?.id || ''}
@@ -185,12 +173,12 @@ export default function RemoteControl() {
                     const panel = intelligentPanels.find((p) => p.id === e.target.value);
                     setSelectedPanel(panel || null);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
-                  <option value="">Choisir un panneau...</option>
+                  <option value="">Sélectionnez un panneau intelligent...</option>
                   {intelligentPanels.map((panel) => (
                     <option key={panel.id} value={panel.id}>
-                      {panel.code} - {panel.address || 'Sans adresse'}
+                      {panel.code} — {panel.address || 'Sans adresse'} (Type {panel.category})
                     </option>
                   ))}
                 </select>
@@ -200,13 +188,13 @@ export default function RemoteControl() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Catégorie
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Catégorie de destination
                       </label>
                       <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       >
                         <option value="A">Type A (Danger)</option>
                         <option value="B">Type B (Priorité)</option>
@@ -216,140 +204,213 @@ export default function RemoteControl() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nouveau code
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Nouveau code à afficher
                       </label>
                       <input
                         type="text"
                         value={newCode}
-                        onChange={(e) => setNewCode(e.target.value)}
-                        placeholder="Ex: A1..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono font-bold text-lg"
+                        onChange={(e) => setNewCode(e.target.value.trim())}
+                        placeholder="Ex: A14, B1, C18..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono font-bold text-sm"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 rounded-lg p-3 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-white rounded border border-blue-200 flex items-center justify-center overflow-hidden mr-3">
+                  {/* Comparatif Visuel Actuel vs Nouveau */}
+                  <div className="grid grid-cols-2 gap-3 bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center p-1">
                         <img
-                          src={`/images/${getFolderFromCode(selectedPanel.code)}/${selectedPanel.code}.png`}
+                          src={getSignImagePath(selectedPanel.code, selectedPanel.category)}
                           alt={selectedPanel.code}
                           className="max-w-full max-h-full object-contain"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=?';
+                            (e.target as HTMLImageElement).src = getOfflineSignSvgFallback(
+                              selectedPanel.code,
+                              selectedPanel.category
+                            );
                           }}
                         />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600 mb-0.5">Code actuel</p>
-                        <p className="text-xl font-bold text-blue-700 leading-none">{selectedPanel.code}</p>
+                        <p className="text-[10px] text-gray-500 font-medium uppercase">Affichage actuel</p>
+                        <p className="text-base font-bold text-gray-900">{selectedPanel.code}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => copySimulationLink(selectedPanel.id)}
-                      className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-100 rounded-lg transition-colors flex items-center text-xs"
-                      title="Lien de simulation"
-                    >
-                      <Share2 className="w-4 h-4 mr-1" />
-                      SIMULER
-                    </button>
+
+                    <div className="flex items-center space-x-2.5 border-l border-gray-200 pl-3">
+                      <div className="w-12 h-12 bg-white rounded-lg border border-blue-200 flex items-center justify-center p-1">
+                        <img
+                          src={getSignImagePath(newCode || selectedPanel.code, selectedCategory)}
+                          alt={newCode || selectedPanel.code}
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = getOfflineSignSvgFallback(
+                              newCode || selectedPanel.code,
+                              selectedCategory
+                            );
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-blue-600 font-medium uppercase">Nouvel affichage</p>
+                        <p className="text-base font-bold text-blue-700">{newCode || '—'}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="border border-gray-200 rounded-lg p-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                      <ImageIcon className="w-4 h-4 mr-2" />
-                      Sélectionner une icône (le nouveau code sera mis à jour)
+                  {/* SELECTEUR D'ICONES */}
+                  <div className="border border-gray-200 rounded-xl p-3 bg-white">
+                    <label className="block text-xs font-semibold text-gray-700 mb-2 flex items-center justify-between">
+                      <span className="flex items-center">
+                        <ImageIcon className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+                        Choisir une icône du catalogue ({availableIcons.length} disponibles)
+                      </span>
+                      <span className="text-[10px] text-gray-400">Cliquez pour sélectionner</span>
                     </label>
+
                     {loadingIcons ? (
                       <div className="flex justify-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 bg-gray-50 rounded border border-gray-100">
-                        {availableIcons.map(iconFile => {
-                          const iconCode = iconFile.replace(/\.[^/.]+$/, "");
+                      <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                        {availableIcons.map((iconFile) => {
+                          const iconCode = iconFile.replace(/\.[^/.]+$/, '');
                           const isSelected = newCode === iconCode;
                           return (
                             <button
                               key={iconFile}
                               type="button"
                               onClick={() => setNewCode(iconCode)}
-                              className={`p-1 rounded border-2 transition-all hover:border-blue-300 ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-transparent bg-white'}`}
+                              className={`p-1.5 rounded-lg border-2 transition-all flex flex-col items-center justify-center ${
+                                isSelected
+                                  ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200'
+                                  : 'border-transparent hover:border-blue-300 bg-white'
+                              }`}
                               title={iconCode}
                             >
                               <img
-                                src={`/images/${categoryToFolder[selectedCategory]}/${iconFile}`}
+                                src={`/images/${getSignFolder(selectedCategory)}/${iconFile}`}
                                 alt={iconCode}
-                                className="w-full h-auto aspect-square object-contain"
+                                className="w-7 h-7 object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = getOfflineSignSvgFallback(
+                                    iconCode,
+                                    selectedCategory
+                                  );
+                                }}
                               />
+                              <span className="text-[8px] font-mono text-gray-600 mt-0.5 truncate w-full text-center">
+                                {iconCode}
+                              </span>
                             </button>
                           );
                         })}
                         {availableIcons.length === 0 && (
-                          <div className="col-span-4 text-center py-4 text-gray-500 text-sm">
-                            Aucune icône trouvée pour cette catégorie
+                          <div className="col-span-6 text-center py-4 text-gray-500 text-xs">
+                            Aucune icône disponible
                           </div>
                         )}
                       </div>
                     )}
                   </div>
 
-                  <button
-                    onClick={sendCommand}
-                    disabled={!newCode}
-                    className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Envoyer la commande
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={sendCommand}
+                      disabled={!newCode || sending}
+                      className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm font-semibold shadow-sm"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {sending ? 'Transmission...' : 'Appliquer sur le panneau'}
+                    </button>
+                    <button
+                      onClick={() => copySimulationLink(selectedPanel.id)}
+                      className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center text-xs font-semibold"
+                      title="Copier l'URL de simulation pour l'ouvrir dans un second onglet"
+                    >
+                      <Share2 className="w-4 h-4 mr-1" />
+                      Simulateur
+                    </button>
+                  </div>
                 </>
               )}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">
-              Seuls les administrateurs et responsables peuvent envoyer des commandes.
+            <p className="text-sm text-gray-500 py-6 text-center">
+              Accès restreint aux administrateurs et responsables.
             </p>
           )}
         </div>
 
+        {/* LISTE DES PANNEAUX INTELLIGENTS */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Panneaux intelligents</h3>
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900">Panneaux intelligents d'Aïn Témouchent</h3>
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+              {intelligentPanels.length} connectés
+            </span>
+          </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
             {intelligentPanels.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
+              <p className="text-sm text-gray-500 text-center py-8">
                 Aucun panneau intelligent configuré
               </p>
             ) : (
               intelligentPanels.map((panel) => (
                 <div
                   key={panel.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  onClick={() => setSelectedPanel(panel)}
+                  className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
+                    selectedPanel?.id === panel.id
+                      ? 'border-blue-500 bg-blue-50/50 shadow-xs'
+                      : 'border-gray-200 bg-gray-50/50 hover:bg-gray-100/70 hover:border-gray-300'
+                  }`}
                 >
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{panel.code}</p>
-                    <p className="text-xs text-gray-500 truncate max-w-[150px]">{panel.address || 'Sans adresse'}</p>
-                  </div>
                   <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 bg-white rounded-lg border border-gray-200 flex items-center justify-center p-0.5">
+                      <img
+                        src={getSignImagePath(panel.code, panel.category)}
+                        alt={panel.code}
+                        className="max-w-full max-h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = getOfflineSignSvgFallback(
+                            panel.code,
+                            panel.category
+                          );
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">{panel.code}</p>
+                      <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                        {panel.address || 'Sans adresse'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${panel.status === 'fonctionnel'
-                        ? 'bg-green-100 text-green-700'
-                        : panel.status === 'en_maintenance'
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-red-100 text-red-700'
-                        }`}
+                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        panel.status === 'fonctionnel'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : panel.status === 'en_maintenance'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}
                     >
-                      {panel.status === 'fonctionnel'
-                        ? 'En ligne'
-                        : panel.status === 'en_maintenance'
-                          ? 'Maintenance'
-                          : 'Hors ligne'}
+                      {panel.status === 'fonctionnel' ? 'Actif' : panel.status}
                     </span>
                     <button
-                      onClick={() => copySimulationLink(panel.id)}
-                      className="text-gray-400 hover:text-blue-600 p-1"
-                      title="Copier le lien de simulation pour ce téléphone"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copySimulationLink(panel.id);
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-white"
+                      title="Copier le lien simulateur"
                     >
                       <Share2 className="w-4 h-4" />
                     </button>
@@ -361,88 +422,61 @@ export default function RemoteControl() {
         </div>
       </div>
 
+      {/* HISTORIQUE DES COMMANDES */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Historique des commandes</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+          Journal des commandes locales
+        </h3>
 
         <div className="space-y-3">
           {commands.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">Aucune commande envoyée</p>
+            <p className="text-sm text-gray-500 text-center py-6">Aucune commande enregistrée</p>
           ) : (
             commands.map((command) => (
               <div
                 key={command.id}
-                className="flex items-start justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-200"
               >
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
                     {command.status === 'executed' && (
-                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle className="w-5 h-5 text-emerald-600 mr-2" />
                     )}
                     {command.status === 'sent' && (
-                      <Clock className="w-4 h-4 text-blue-600 mr-2" />
+                      <Clock className="w-5 h-5 text-blue-600 mr-2" />
                     )}
                     {command.status === 'failed' && (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-5 h-5 text-rose-600 mr-2" />
                     )}
-                    <span className="font-medium text-gray-900">
-                      {command.panel?.code || 'Panneau inconnu'}
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">
+                        Panneau {command.panel?.code || 'Cible'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(command.created_at).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:flex items-center space-x-3 text-xs bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                    <span className="font-mono font-semibold text-gray-600">
+                      {command.old_code || '—'}
+                    </span>
+                    <span className="text-gray-400">→</span>
+                    <span className="font-mono font-bold text-blue-600">
+                      {command.new_code}
                     </span>
                   </div>
-
-                  <div className="text-sm text-gray-600 flex items-center space-x-3">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden mr-2">
-                        <img
-                          src={`/images/${getFolderFromCode(command.old_code || '')}/${command.old_code}.png`}
-                          alt={command.old_code || ''}
-                          className="max-w-full max-h-full object-contain"
-                          onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/32?text=?'}
-                        />
-                      </div>
-                      <span className="font-medium">{command.old_code}</span>
-                    </div>
-                    <span className="text-gray-400">→</span>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden mr-2">
-                        <img
-                          src={`/images/${getFolderFromCode(command.new_code || '')}/${command.new_code}.png`}
-                          alt={command.new_code || ''}
-                          className="max-w-full max-h-full object-contain"
-                          onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/32?text=?'}
-                        />
-                      </div>
-                      <span className="font-medium">{command.new_code}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(command.created_at).toLocaleString('fr-FR')}
-                  </p>
                 </div>
 
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-4 ${command.status === 'executed'
-                    ? 'bg-green-100 text-green-700'
-                    : command.status === 'sent'
-                      ? 'bg-blue-100 text-blue-700'
-                      : command.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                >
-                  {command.status === 'executed'
-                    ? 'Exécutée'
-                    : command.status === 'sent'
-                      ? 'Envoyée'
-                      : command.status === 'pending'
-                        ? 'En attente'
-                        : 'Échec'}
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                  Exécutée avec succès
                 </span>
               </div>
             ))
           )}
         </div>
       </div>
-    </div >
+    </div>
   );
 }

@@ -113,14 +113,65 @@ export default function Auth() {
           {isSignUp ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire"}
         </button>
 
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">Accès de démonstration</h3>
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">Email:</span> admin@admin.com
-          </p>
-          <p className="text-sm text-blue-700">
-            <span className="font-medium">Mot de passe:</span> admin
-          </p>
+        <div className="mt-6 p-4 bg-blue-50/80 border border-blue-200 rounded-xl">
+          <h3 className="text-xs font-bold text-blue-900 mb-2 uppercase tracking-wider flex items-center justify-between">
+            <span>Comptes de test locaux (Cliquez pour tester)</span>
+            <span className="text-[10px] font-normal text-blue-600 bg-white px-2 py-0.5 rounded border border-blue-100">100% Hors Ligne</span>
+          </h3>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@admin.com');
+                setPassword('admin');
+                setIsSignUp(false);
+              }}
+              className="p-2 bg-white rounded-lg border border-blue-200 text-left hover:bg-blue-50 transition-colors shadow-2xs"
+            >
+              <p className="font-bold text-blue-900">Admin</p>
+              <p className="text-gray-500 font-mono text-[10px]">admin@admin.com</p>
+              <p className="text-gray-400 text-[9px]">Mot de passe: admin</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('responsable@geosignal.dz');
+                setPassword('responsable123');
+                setIsSignUp(false);
+              }}
+              className="p-2 bg-white rounded-lg border border-blue-200 text-left hover:bg-blue-50 transition-colors shadow-2xs"
+            >
+              <p className="font-bold text-blue-900">Responsable</p>
+              <p className="text-gray-500 font-mono text-[10px]">responsable@...</p>
+              <p className="text-gray-400 text-[9px]">Mot de passe: responsable123</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('tech1@geosignal.dz');
+                setPassword('tech123');
+                setIsSignUp(false);
+              }}
+              className="p-2 bg-white rounded-lg border border-blue-200 text-left hover:bg-blue-50 transition-colors shadow-2xs"
+            >
+              <p className="font-bold text-blue-900">Technicien</p>
+              <p className="text-gray-500 font-mono text-[10px]">tech1@geosignal.dz</p>
+              <p className="text-gray-400 text-[9px]">Mot de passe: tech123</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('observateur@geosignal.dz');
+                setPassword('obs123');
+                setIsSignUp(false);
+              }}
+              className="p-2 bg-white rounded-lg border border-blue-200 text-left hover:bg-blue-50 transition-colors shadow-2xs"
+            >
+              <p className="font-bold text-blue-900">Observateur</p>
+              <p className="text-gray-500 font-mono text-[10px]">observateur@...</p>
+              <p className="text-gray-400 text-[9px]">Mot de passe: obs123</p>
+            </button>
+          </div>
         </div>
       </div>
     </div>

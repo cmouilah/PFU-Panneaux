@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { auth } from '../lib/api';
 import { Profile } from '../types/database';
-// import { supabase } from '../lib/supabase'; // REMOVED
 
 interface User {
   id: string;
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUp(email: string, password: string, fullName: string) {
     try {
       await auth.register({ email, password, fullName });
-      // After register, maybe auto-login?
+      await signIn(email, password);
     } catch (error) {
       throw error;
     }

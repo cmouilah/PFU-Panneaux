@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
-import { interventions as interventionsApi, panels as panelsApi, technicians as techniciansApi } from '../lib/api';
+import {
+  interventions as interventionsApi,
+  panels as panelsApi,
+  technicians as techniciansApi,
+  localDataManagement
+} from '../lib/api';
 import { Intervention, Panel, Technician } from '../types/database';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Calendar, User, MapPin } from 'lucide-react';
+import { Plus, Calendar, User, MapPin, FileSpreadsheet } from 'lucide-react';
 
 export default function InterventionManagement() {
   const { profile } = useAuth();
@@ -17,6 +22,12 @@ export default function InterventionManagement() {
 
   useEffect(() => {
     loadData();
+
+    const unsubscribe = localDataManagement.subscribe(() => {
+      loadData();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   async function loadData() {
@@ -37,6 +48,17 @@ export default function InterventionManagement() {
     }
   }
 
+  function handleExportCsv() {
+    const csvStr = localDataManagement.exportInterventionsCsv();
+    const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interventions_geosignal_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const filteredInterventions = interventions.filter(
     (intervention) => filterStatus === 'all' || intervention.status === filterStatus
   );
@@ -54,17 +76,27 @@ export default function InterventionManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Suivi de la maintenance</h2>
-          <p className="text-gray-600">Gestion des interventions et des techniciens</p>
+          <p className="text-gray-600">Gestion des interventions et des techniciens locaux</p>
         </div>
-        {canEdit && (
+        <div className="flex items-center space-x-2">
           <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={handleExportCsv}
+            className="flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+            title="Exporter la liste en fichier CSV"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle intervention
+            <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-600" />
+            Export CSV
           </button>
-        )}
+          {canEdit && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle intervention
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
@@ -138,7 +170,7 @@ function InterventionCard({ intervention, onUpdate, canEdit }: InterventionCardP
 
       if (newStatus === 'terminee' && intervention.panel && intervention.panel_id) {
         const panelUpdates = {
-          status: 'fonctionnel',
+          status: 'fonctionnel' as const,
           last_maintenance: new Date().toISOString(),
         };
         await panelsApi.update(intervention.panel_id, panelUpdates);
@@ -267,13 +299,17 @@ function InterventionModal({ panels, technicians, onClose, onSave }: Interventio
     try {
       // Create intervention
       await interventionsApi.create({
-        ...formData,
+        panel_id: formData.panel_id,
+        technician_id: formData.technician_id || null,
+        type: formData.type as any,
+        priority: formData.priority as any,
+        description: formData.description,
+        scheduled_date: formData.scheduled_date || null,
         status: 'planifiee',
-        // created_by: profile?.id // API handles created_by if needed, or we send it
       });
 
       if (formData.panel_id) {
-        await panelsApi.update(formData.panel_id, { status: 'en_maintenance' });
+        await panelsApi.update(formData.panel_id, { status: 'en_maintenance' as const });
       }
 
       onSave();

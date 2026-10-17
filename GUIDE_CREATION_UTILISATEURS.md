@@ -1,73 +1,47 @@
-# Guide : Créer des Utilisateurs (Migration Locale)
+# Guide : Utilisateurs et Authentification Locale
 
-Depuis la migration vers la base de données locale PostgreSQL, la gestion des utilisateurs se fait directement via des scripts ou l'application.
-
-## 🎯 Méthode Recommandée : Script de Création
-
-Nous avons créé des scripts utilitaires pour configurer votre base de données et créer des utilisateurs.
-
-### Étape 1 : Initialiser la Base de Données (Une seule fois)
-
-Cette commande va créer toutes les tables nécessaires (profiles, users, panels, etc.) dans votre base de données PostgreSQL locale.
-
-```bash
-npx tsx server/scripts/setup_db.ts
-```
-
-### Étape 2 : Créer un Utilisateur
-
-Une fois la base de données initialisée, vous pouvez créer des utilisateurs :
-
-```bash
-npx tsx server/scripts/create_user.ts
-```
-
-3. Suivez les instructions à l'écran :
-   - Entrez le **Nom complet**
-   - Entrez l' **Email**
-   - Entrez le **Mot de passe**
-   - Entrez le **Rôle** (admin, responsable, technicien, ou observateur)
-
-### Exemple
-
-```text
---- Création d'un nouvel utilisateur ---
-Nom complet: Admin Principal
-Email: admin@geosignal.dz
-Mot de passe: admin123
-Rôle (admin, responsable, technicien, observateur) [observateur]: admin
-
-✅ Utilisateur admin@geosignal.dz créé avec succès avec le rôle 'admin'
-```
+L'application **GeoSignal** fonctionne désormais en **architecture 100 % locale et hors ligne**.
+Aucune base de données externe ou serveur backend n'est requis. L'authentification et les profils sont gérés directement via le moteur de persistance local (`localStorage`).
 
 ---
 
-## 🌐 Méthode Alternative : Inscription via l'Application
+## 🎯 Comptes de Démonstration Pré-configurés
 
-Vous pouvez toujours utiliser la page d'inscription de l'application, mais les utilisateurs seront créés avec le rôle **"observateur"** par défaut.
+Vous pouvez vous connecter instantanément avec l'un des comptes de test suivants (disponibles en 1 clic sur la page de connexion) :
 
-1. Allez sur `http://localhost:5173/auth` (ou déconnectez-vous)
-2. Cliquez sur "S'inscrire"
-3. Créez le compte
-4. Pour changer le rôle, vous devrez modifier la base de données manuellement (via SQL).
-
-### Changer le rôle via SQL
-
-Si vous avez accès à votre base de données locale (via pgAdmin ou psql) :
-
-```sql
-UPDATE profiles 
-SET role = 'admin' 
-WHERE id IN (SELECT profile_id FROM users WHERE email = 'votre@email.com');
-```
+| Rôle | Email | Mot de passe | Permissions |
+|------|-------|--------------|-------------|
+| **Admin** | `admin@admin.com` | `admin` | Accès complet (Panneaux, Techniciens, Maintenance, Télécommande, Export/Import) |
+| **Admin Principal** | `admin@geosignal.dz` | `admin123` | Accès complet |
+| **Responsable** | `responsable@geosignal.dz` | `responsable123` | Gestion panneaux, télécommande, maintenance |
+| **Technicien 1** | `tech1@geosignal.dz` | `tech123` | Suivi et consultation des interventions |
+| **Technicien 2** | `tech2@geosignal.dz` | `tech123` | Suivi et consultation des interventions |
+| **Observateur** | `observateur@geosignal.dz` | `obs123` | Consultation en lecture seule |
 
 ---
 
-## 📋 Rôles Disponibles
+## 📝 Création de Nouveaux Comptes
 
-- **admin** : Accès complet (Gestion utilisateurs, configuration système)
-- **responsable** : Gestion des panneaux et interventions
-- **technicien** : Accès aux interventions assignées
-- **observateur** : Lecture seule
+1. Cliquez sur **"Pas de compte ? S'inscrire"** sur la page de connexion.
+2. Remplissez votre nom complet, votre adresse email et votre mot de passe.
+3. Le compte est immédiatement créé et enregistré dans votre navigateur.
+4. Par défaut, un nouvel utilisateur dispose du rôle **"observateur"**.
 
-npm run dev:full
+---
+
+## 🔄 Gestion des Données et Réinitialisation
+
+Dans le menu **Gestion des panneaux** > **Données Locales** :
+- **Exporter Base Complète (JSON)** : Sauvegarde tous les utilisateurs, profils, panneaux, techniciens et interventions dans un fichier JSON.
+- **Importer Sauvegarde (JSON)** : Restaure les données depuis un fichier JSON.
+- **Réinitialiser aux Défauts** : Réinitialise l'application aux données d'origine d'Aïn Témouchent.
+
+---
+
+## 🚀 Démarrer l'Application
+
+```bash
+npm run dev
+```
+
+Ouvrez ensuite [http://localhost:5173](http://localhost:5173) dans votre navigateur.

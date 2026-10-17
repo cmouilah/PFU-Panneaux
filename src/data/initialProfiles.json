@@ -1,0 +1,44 @@
+[
+  {
+    "id": "prof-admin-01",
+    "full_name": "Admin Principal",
+    "role": "admin",
+    "created_at": "2023-01-01T08:00:00Z",
+    "updated_at": "2023-01-01T08:00:00Z"
+  },
+  {
+    "id": "prof-resp-01",
+    "full_name": "Karim Benali",
+    "role": "responsable",
+    "created_at": "2023-01-05T09:00:00Z",
+    "updated_at": "2023-01-05T09:00:00Z"
+  },
+  {
+    "id": "prof-tech-01",
+    "full_name": "Ahmed Mansouri",
+    "role": "technicien",
+    "created_at": "2023-01-10T10:00:00Z",
+    "updated_at": "2023-01-10T10:00:00Z"
+  },
+  {
+    "id": "prof-tech-02",
+    "full_name": "Yacine Brahimi",
+    "role": "technicien",
+    "created_at": "2023-01-12T11:00:00Z",
+    "updated_at": "2023-01-12T11:00:00Z"
+  },
+  {
+    "id": "prof-tech-03",
+    "full_name": "Nadir Belhadj",
+    "role": "technicien",
+    "created_at": "2023-01-15T12:00:00Z",
+    "updated_at": "2023-01-15T12:00:00Z"
+  },
+  {
+    "id": "prof-obs-01",
+    "full_name": "Sarah Khelifi",
+    "role": "observateur",
+    "created_at": "2023-02-01T14:00:00Z",
+    "updated_at": "2023-02-01T14:00:00Z"
+  }
+]
